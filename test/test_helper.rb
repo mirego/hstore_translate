@@ -6,6 +6,8 @@ DatabaseCleaner.strategy = :transaction
 
 MiniTest::Test = MiniTest::Unit::TestCase unless MiniTest.const_defined?(:Test) # Rails 4.0.x
 
+I18n.available_locales = %i(en fr)
+
 class Post < ActiveRecord::Base
   translates :title
 end
