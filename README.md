@@ -77,8 +77,8 @@ your translated attributes, using the suffix "_translations":
 class CreatePosts < ActiveRecord::Migration
   def up
     create_table :posts do |t|
-      t.column :title_translations, 'hstore'
-      t.column :body_translations,  'hstore'
+      t.column :title, 'hstore'
+      t.column :body,  'hstore'
       t.timestamps
     end
   end

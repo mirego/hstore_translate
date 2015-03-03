@@ -56,7 +56,7 @@ class HstoreTranslate::Test < Minitest::Test
     def create_table
       connection = establish_connection(db_config)
       connection.create_table(:posts, :force => true) do |t|
-        t.column :title_translations, 'hstore'
+        t.column :title, 'hstore'
       end
     end
   end

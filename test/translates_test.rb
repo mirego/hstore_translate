@@ -5,12 +5,12 @@ class TranslatesTest < HstoreTranslate::Test
   def test_assigns_in_current_locale
     I18n.with_locale(:en) do
       p = Post.new(:title => "English Title")
-      assert_equal("English Title", p.title_translations['en'])
+      assert_equal("English Title", p.title_en)
     end
   end
 
   def test_retrieves_in_current_locale
-    p = Post.new(:title_translations => { "en" => "English Title", "fr" => "Titre français" })
+    p = Post.new(:title => { "en" => "English Title", "fr" => "Titre français" })
     I18n.with_locale(:fr) do
       assert_equal("Titre français", p.title)
     end
@@ -20,7 +20,7 @@ class TranslatesTest < HstoreTranslate::Test
     I18n::Backend::Simple.include(I18n::Backend::Fallbacks)
     I18n.default_locale = :"en-US"
 
-    p = Post.new(:title_translations => {"en" => "English Title"})
+    p = Post.new(:title => {"en" => "English Title"})
     I18n.with_locale(:fr) do
       assert_equal("English Title", p.title)
     end
@@ -28,15 +28,15 @@ class TranslatesTest < HstoreTranslate::Test
 
   def test_assigns_in_specified_locale
     I18n.with_locale(:en) do
-      p = Post.new(:title_translations => { "en" => "English Title" })
+      p = Post.new(:title => { "en" => "English Title" })
       p.title_fr = "Titre français"
-      assert_equal("Titre français", p.title_translations["fr"])
+      assert_equal("Titre français", p.title_fr)
     end
   end
 
   def test_persists_changes_in_specified_locale
     I18n.with_locale(:en) do
-      p = Post.create!(:title_translations => { "en" => "Original Text" })
+      p = Post.create!(:title => { "en" => "Original Text" })
       p.title_en = "Updated Text"
       p.save!
       assert_equal("Updated Text", Post.last.title_en)
@@ -45,7 +45,7 @@ class TranslatesTest < HstoreTranslate::Test
 
   def test_retrieves_in_specified_locale
     I18n.with_locale(:en) do
-      p = Post.new(:title_translations => { "en" => "English Title", "fr" => "Titre français" })
+      p = Post.new(:title => { "en" => "English Title", "fr" => "Titre français" })
       assert_equal("Titre français", p.title_fr)
     end
   end
@@ -54,7 +54,7 @@ class TranslatesTest < HstoreTranslate::Test
     I18n::Backend::Simple.include(I18n::Backend::Fallbacks)
     I18n.default_locale = :"en-US"
 
-    p = Post.new(:title_translations => { "en" => "English Title" })
+    p = Post.new(:title => { "en" => "English Title" })
     I18n.with_locale(:fr) do
       assert_equal("English Title", p.title_fr)
     end
@@ -64,7 +64,7 @@ class TranslatesTest < HstoreTranslate::Test
     I18n::Backend::Simple.include(I18n::Backend::Fallbacks)
     I18n.default_locale = :"en-US"
 
-    p = Post.new(:title_translations => { "en" => "English Title", "fr" => "" })
+    p = Post.new(:title => { "en" => "English Title", "fr" => "" })
     I18n.with_locale(:fr) do
       assert_equal("English Title", p.title_fr)
     end
@@ -74,7 +74,7 @@ class TranslatesTest < HstoreTranslate::Test
     I18n::Backend::Simple.include(I18n::Backend::Fallbacks)
     I18n.default_locale = :"en-US"
 
-    p = Post.new(:title_translations => { "en" => "English Title" })
+    p = Post.new(:title => { "en" => "English Title" })
     p.disable_fallback
     I18n.with_locale(:fr) do
       assert_equal(nil, p.title_fr)
@@ -85,7 +85,7 @@ class TranslatesTest < HstoreTranslate::Test
     I18n::Backend::Simple.include(I18n::Backend::Fallbacks)
     I18n.default_locale = :"en-US"
 
-    p = Post.new(:title_translations => { "en" => "English Title" })
+    p = Post.new(:title => { "en" => "English Title" })
     p.enable_fallback
 
     assert_equal("English Title", p.title_fr)
@@ -96,7 +96,7 @@ class TranslatesTest < HstoreTranslate::Test
     I18n::Backend::Simple.include(I18n::Backend::Fallbacks)
     I18n.default_locale = :"en-US"
 
-    p = Post.new(:title_translations => { "en" => "English Title" })
+    p = Post.new(:title => { "en" => "English Title" })
     p.disable_fallback
     p.enable_fallback
     I18n.with_locale(:fr) do
@@ -108,7 +108,7 @@ class TranslatesTest < HstoreTranslate::Test
     I18n::Backend::Simple.include(I18n::Backend::Fallbacks)
     I18n.default_locale = :"en-US"
 
-    p = Post.new(:title_translations => { "en" => "English Title" })
+    p = Post.new(:title => { "en" => "English Title" })
     p.disable_fallback
 
     assert_nil(p.title_fr)
@@ -124,7 +124,7 @@ class TranslatesTest < HstoreTranslate::Test
   end
 
   def test_persists_translations_assigned_as_hash
-    p = Post.create!(:title_translations => { "en" => "English Title", "fr" => "Titre français" })
+    p = Post.create!(:title => { "en" => "English Title", "fr" => "Titre français" })
     p.reload
     assert_equal({"en" => "English Title", "fr" => "Titre français"}, p.title_translations)
   end
@@ -136,7 +136,7 @@ class TranslatesTest < HstoreTranslate::Test
   end
 
   def test_with_translation_relation
-    p = Post.create!(:title_translations => { "en" => "Alice in Wonderland", "fr" => "Alice au pays des merveilles" })
+    p = Post.create!(:title => { "en" => "Alice in Wonderland", "fr" => "Alice au pays des merveilles" })
     I18n.with_locale(:en) do
       assert_equal p.title_en, Post.with_title_translation("Alice in Wonderland").first.try(:title)
     end

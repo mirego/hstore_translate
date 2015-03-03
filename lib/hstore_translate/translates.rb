@@ -8,7 +8,7 @@ module HstoreTranslate
       self.translated_attrs = attrs
 
       attrs.each do |attr_name|
-        serialize "#{attr_name}_translations", ActiveRecord::Coders::Hstore unless HstoreTranslate::native_hstore?
+        serialize attr_name, ActiveRecord::Coders::Hstore unless HstoreTranslate::native_hstore?
 
         define_method attr_name do
           read_hstore_translation(attr_name)
@@ -18,8 +18,12 @@ module HstoreTranslate
           write_hstore_translation(attr_name, value)
         end
 
+        define_method "#{attr_name}_translations" do
+          raw_translations(attr_name)
+        end
+
         define_singleton_method "with_#{attr_name}_translation" do |value, locale = I18n.locale|
-          quoted_translation_store = connection.quote_column_name("#{attr_name}_translations")
+          quoted_translation_store = connection.quote_column_name(attr_name)
           where("#{quoted_translation_store} @> hstore(:locale, :value)", locale: locale, value: value)
         end
 
@@ -51,14 +55,18 @@ module HstoreTranslate
 
       protected
 
+      def raw_translations(attr_name)
+        self[attr_name] || {}
+      end
+
       def hstore_translate_fallback_locales(locale)
         return if @enabled_fallback == false || !I18n.respond_to?(:fallbacks)
         I18n.fallbacks[locale]
       end
 
       def read_hstore_translation(attr_name, locale = I18n.locale)
-        translations = send("#{attr_name}_translations") || {}
-        translation  = translations[locale.to_s]
+        translations = raw_translations(attr_name)
+        translation = translations[locale.to_s]
 
         if fallback_locales = hstore_translate_fallback_locales(locale)
           fallback_locales.each do |fallback_locale|
@@ -74,11 +82,16 @@ module HstoreTranslate
       end
 
       def write_hstore_translation(attr_name, value, locale = I18n.locale)
-        translation_store = "#{attr_name}_translations"
-        translations = send(translation_store) || {}
-        send("#{translation_store}_will_change!") unless translations[locale.to_s] == value
-        translations[locale.to_s] = value
-        send("#{translation_store}=", translations)
+        translations = raw_translations(attr_name)
+
+        if value.is_a?(Hash)
+          translations = value
+        else
+          translations[locale.to_s] = value
+        end
+
+        send("#{attr_name}_will_change!")
+        self[attr_name] = translations
         value
       end
 
